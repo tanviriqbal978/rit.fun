@@ -14,6 +14,7 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<'home' | 'launch' | 'detail' | 'portfolio'>('home');
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [uiError, setUiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedToken && currentPage === 'detail') {
@@ -25,11 +26,21 @@ export default function App() {
   const renderDetail = () => (
     <div style={{ padding: '20px' }}>
       <button onClick={() => setCurrentPage('home')} style={{ background: 'none', border: 'none', color: COLORS.textSecondary, cursor: 'pointer', marginBottom: '20px', fontFamily: 'monospace', fontSize: '14px' }}>{"[<- Back To Tokens]"}</button>
+      
+      {uiError && (
+        <div style={{ backgroundColor: '#450a0a', border: '1px solid #ef4444', color: '#ef4444', padding: '15px', marginBottom: '20px', fontSize: '14px' }}>
+          Error: {uiError}
+          <button onClick={() => setUiError(null)} style={{ float: 'right', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>[X]</button>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(300px, 1fr)', gap: '30px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ backgroundColor: COLORS.cardBackground, border: `1px solid ${COLORS.border}`, padding: '24px', boxShadow: 'none' }}>
             <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start', marginBottom: '24px' }}>
-               <div style={{ width: '100px', height: '100px', borderRadius: '12px', backgroundColor: '#1a2a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🐱</div>
+               <div style={{ width: '100px', height: '100px', borderRadius: '12px', backgroundColor: '#1a2a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px', overflow: 'hidden' }}>
+                 <img src="/logo.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.parentNode as HTMLDivElement).innerText = '🐱'; }} />
+               </div>
                <div>
                   <h2 style={{ margin: '0 0 10px 0', color: COLORS.primary, fontSize: '28px' }}>{selectedToken?.name} <span style={{ color: COLORS.textSecondary }}>(${selectedToken?.symbol})</span></h2>
                   <div style={{ fontSize: '12px', color: COLORS.textMuted, fontFamily: 'monospace', wordBreak: 'break-all', backgroundColor: '#000', padding: '4px 8px', borderRadius: '4px' }}>
@@ -75,7 +86,7 @@ export default function App() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <TradePanel token={selectedToken!} account={account} trade={trade} />
+          <TradePanel token={selectedToken!} account={account} trade={trade} setError={setUiError} />
           
           <div style={{ backgroundColor: COLORS.cardBackground, border: `1px solid ${COLORS.border}`, padding: '20px' }}>
             <h3 style={{ color: COLORS.primary, marginBottom: '15px', fontSize: '14px' }}>[Bonding Curve Progress]</h3>
@@ -154,6 +165,13 @@ export default function App() {
         </div>
       </div>
       
+      {uiError && (
+        <div style={{ backgroundColor: '#450a0a', border: '1px solid #ef4444', color: '#ef4444', padding: '15px', marginBottom: '20px', fontSize: '14px' }}>
+          Error: {uiError}
+          <button onClick={() => setUiError(null)} style={{ float: 'right', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>[X]</button>
+        </div>
+      )}
+
       {loading && <div style={{ textAlign: 'center', padding: '40px', color: COLORS.textSecondary }}>Checking Ritual Chain...</div>}
       {error && <div style={{ padding: '20px', backgroundColor: '#450a0a', border: '1px solid #ef4444', color: '#ef4444', marginBottom: '20px' }}>Error: {error}</div>}
 
@@ -195,7 +213,9 @@ export default function App() {
             onMouseOver={(e) => e.currentTarget.style.borderColor = COLORS.primary}
             onMouseOut={(e) => e.currentTarget.style.borderColor = COLORS.border}
           >
-            <div style={{ fontSize: '40px', marginBottom: '10px' }}>🐱</div>
+            <div style={{ width: '60px', height: '60px', backgroundColor: '#1a2a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px', marginBottom: '10px', overflow: 'hidden' }}>
+              <img src="/logo.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.parentNode as HTMLDivElement).innerText = '🐱'; }} />
+            </div>
             <h3 style={{ margin: '0 0 5px 0', color: COLORS.primary }}>{token.name} (${token.symbol})</h3>
             <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: COLORS.textSecondary, height: '40px', overflow: 'hidden' }}>
               {token.description}
@@ -224,10 +244,11 @@ export default function App() {
       e.preventDefault();
       try {
         setLaunching(true);
+        setUiError(null);
         await launchToken(name, ticker, desc);
         setCurrentPage('home');
       } catch (err: any) {
-        alert(err.message);
+        setUiError(err.message);
       } finally {
         setLaunching(false);
       }
@@ -236,6 +257,14 @@ export default function App() {
     return (
       <div style={{ maxWidth: '600px', margin: '40px auto', padding: '20px', backgroundColor: COLORS.cardBackground, border: `1px solid ${COLORS.border}` }}>
         <h2 style={{ color: COLORS.primary, marginBottom: '20px' }}>Launch your token 🚀</h2>
+        
+        {uiError && (
+          <div style={{ backgroundColor: '#450a0a', border: '1px solid #ef4444', color: '#ef4444', padding: '15px', marginBottom: '20px', fontSize: '14px' }}>
+            Error: {uiError}
+            <button onClick={() => setUiError(null)} style={{ float: 'right', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>[X]</button>
+          </div>
+        )}
+
         <form onSubmit={handleLaunch} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           <div>
             <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Token Name</label>
@@ -284,6 +313,7 @@ export default function App() {
       </div>
     );
   };
+
 
   return (
     <div style={{ 
@@ -386,7 +416,7 @@ export default function App() {
   );
 }
 
-function TradePanel({ token, account, trade }: { token: Token, account: string | null, trade: any }) {
+function TradePanel({ token, account, trade, setError }: { token: Token, account: string | null, trade: any, setError: (e: string | null) => void }) {
   const [tab, setTab] = useState<'buy' | 'sell'>('buy');
   const [amount, setAmount] = useState('100');
   const [loading, setLoading] = useState(false);
@@ -394,12 +424,13 @@ function TradePanel({ token, account, trade }: { token: Token, account: string |
   const handleTrade = async () => {
     try {
       setLoading(true);
+      setError(null);
       // Rough value calculation for buy (needs contact call in real app)
       const val = (Number(token.price) * Number(amount) * 1.1).toString(); // 10% slippage buffer
       await trade(token.address, amount, tab === 'buy', val);
-      alert('Trade successful!');
+      // No alert, success is implied or we could add a success state
     } catch (err: any) {
-      alert(err.message);
+      setError(err.message);
     } finally {
       setLoading(false);
     }

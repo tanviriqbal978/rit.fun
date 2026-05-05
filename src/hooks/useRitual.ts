@@ -114,32 +114,55 @@ export function useRitual() {
   }, [fetchTokens]);
 
   const launchToken = async (name: string, symbol: string, description: string) => {
-    if (!provider || !account) throw new Error("Wallet not connected");
+    console.log("launchToken called with:", { name, symbol, description });
+    if (!provider || !account) {
+      console.error("Wallet not connected in launchToken");
+      throw new Error("Wallet not connected");
+    }
     const signer = await provider.getSigner();
+    console.log("Signer obtained:", signer.address);
     const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer);
     
-    const tx = await factory.createToken(name, symbol, description, {
-      ...TX_CONFIG
-    });
-    return await tx.wait();
+    console.log("Sending createToken transaction...");
+    try {
+      const tx = await factory.createToken(name, symbol, description, {
+        ...TX_CONFIG
+      });
+      console.log("Transaction sent:", tx.hash);
+      const receipt = await tx.wait();
+      console.log("Transaction confirmed:", receipt.hash);
+      return receipt;
+    } catch (err: any) {
+      console.error("Transaction failed:", err);
+      throw err;
+    }
   };
 
   const trade = async (tokenAddress: string, amount: string, isBuy: boolean, value?: string) => {
+    console.log("trade called:", { tokenAddress, amount, isBuy, value });
     if (!provider || !account) throw new Error("Wallet not connected");
     const signer = await provider.getSigner();
     const token = new ethers.Contract(tokenAddress, TOKEN_ABI, signer);
     
-    if (isBuy) {
-        const tx = await token.buy(ethers.parseEther(amount), {
-            value: ethers.parseEther(value || "0"),
-            ...TX_CONFIG
-        });
-        return await tx.wait();
-    } else {
-        const tx = await token.sell(ethers.parseEther(amount), {
-            ...TX_CONFIG
-        });
-        return await tx.wait();
+    console.log(`Executing ${isBuy ? 'BUY' : 'SELL'}...`);
+    try {
+      if (isBuy) {
+          const tx = await token.buy(ethers.parseEther(amount), {
+              value: ethers.parseEther(value || "0"),
+              ...TX_CONFIG
+          });
+          console.log("Buy tx sent:", tx.hash);
+          return await tx.wait();
+      } else {
+          const tx = await token.sell(ethers.parseEther(amount), {
+              ...TX_CONFIG
+          });
+          console.log("Sell tx sent:", tx.hash);
+          return await tx.wait();
+      }
+    } catch (err: any) {
+      console.error("Trade transaction failed:", err);
+      throw err;
     }
   };
 

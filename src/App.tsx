@@ -259,57 +259,72 @@ export default function App() {
         <h2 style={{ color: COLORS.primary, marginBottom: '20px' }}>Launch your token 🚀</h2>
         
         {uiError && (
-          <div style={{ backgroundColor: '#450a0a', border: '1px solid #ef4444', color: '#ef4444', padding: '15px', marginBottom: '20px', fontSize: '14px' }}>
+          <div style={{ backgroundColor: '#2d0606', border: '1px solid #ef4444', color: '#ef4444', padding: '15px', marginBottom: '20px', fontSize: '14px' }}>
             Error: {uiError}
             <button onClick={() => setUiError(null)} style={{ float: 'right', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>[X]</button>
           </div>
         )}
 
-        <form onSubmit={handleLaunch} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Token Name</label>
-            <input 
-              value={name} onChange={e => setName(e.target.value)} required
-              style={{ width: '100%', padding: '10px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, color: '#fff', fontFamily: 'monospace' }} 
-            />
+        {!account ? (
+          <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, marginBottom: '20px' }}>
+            <p style={{ color: COLORS.textSecondary, marginBottom: '15px' }}>Wallet not connected. Connect now to launch.</p>
+            <button 
+              onClick={connectWallet}
+              style={{ padding: '10px 20px', backgroundColor: COLORS.primary, border: 'none', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Connect Wallet
+            </button>
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Ticker</label>
-            <input 
-              value={ticker} onChange={e => setTicker(e.target.value)} required
-              style={{ width: '100%', padding: '10px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, color: '#fff', fontFamily: 'monospace' }} 
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Description</label>
-            <textarea 
-              value={desc} onChange={e => setDesc(e.target.value)} required
-              style={{ width: '100%', padding: '10px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, color: '#fff', fontFamily: 'monospace', minHeight: '100px' }} 
-            />
-          </div>
-          
-          <div style={{ backgroundColor: '#1a1a1a', padding: '15px', fontSize: '12px', color: COLORS.textSecondary }}>
-            <p style={{ margin: 0 }}>Bonding Curve Info: Price increases as more tokens are bought. When market cap hits 69,000 RITUAL, liquidity is automatically added to the DEX.</p>
-          </div>
+        ) : (
+          <form onSubmit={handleLaunch} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Token Name</label>
+              <input 
+                value={name} onChange={e => setName(e.target.value)} required
+                placeholder="e.g. Ritual Cat"
+                style={{ width: '100%', padding: '12px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, color: '#fff', fontFamily: 'monospace' }} 
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Ticker</label>
+              <input 
+                value={ticker} onChange={e => setTicker(e.target.value)} required
+                placeholder="e.g. RCAT"
+                style={{ width: '100%', padding: '12px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, color: '#fff', fontFamily: 'monospace' }} 
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', color: COLORS.textSecondary }}>Description</label>
+              <textarea 
+                value={desc} onChange={e => setDesc(e.target.value)} required
+                placeholder="What is this token about?"
+                style={{ width: '100%', padding: '12px', backgroundColor: '#000', border: `1px solid ${COLORS.border}`, color: '#fff', fontFamily: 'monospace', minHeight: '100px' }} 
+              />
+            </div>
+            
+            <div style={{ backgroundColor: '#1a1a1a', padding: '15px', fontSize: '12px', color: COLORS.textSecondary, borderLeft: `4px solid ${COLORS.primary}` }}>
+              <p style={{ margin: 0 }}>Bonding Curve Info: Initial price is low and increases as supply is bought. Once the goal of 69,000 RITUAL is met, liquidity is finalized.</p>
+            </div>
 
-          <button 
-            type="submit"
-            disabled={launching || !account}
-            style={{
-              backgroundColor: account ? COLORS.primary : COLORS.textMuted,
-              color: '#000',
-              border: 'none',
-              padding: '15px',
-              fontFamily: 'monospace',
-              fontWeight: 'bold',
-              cursor: account ? 'pointer' : 'not-allowed',
-              marginTop: '10px'
-            }}
-          >
-            {launching ? 'Launching...' : account ? 'Create Token' : 'Connect Wallet to Launch'}
-          </button>
-          {!account && <p style={{ fontSize: '11px', color: '#ef4444', textAlign: 'center', margin: 0 }}>* Please connect your wallet from the top right to launch.</p>}
-        </form>
+            <button 
+              type="submit"
+              disabled={launching}
+              style={{
+                backgroundColor: COLORS.primary,
+                color: '#000',
+                border: 'none',
+                padding: '15px',
+                fontFamily: 'monospace',
+                fontWeight: 'bold',
+                cursor: launching ? 'not-allowed' : 'pointer',
+                marginTop: '10px',
+                fontSize: '16px'
+              }}
+            >
+              {launching ? 'Launching... (Check MetaMask)' : 'Create Token'}
+            </button>
+          </form>
+        )}
       </div>
     );
   };

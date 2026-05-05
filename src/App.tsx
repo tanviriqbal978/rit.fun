@@ -123,24 +123,53 @@ export default function App() {
     <div style={{ padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ margin: 0, color: COLORS.primary }}>Latest Tokens 🐱</h2>
-        <button 
-          onClick={() => setCurrentPage('launch')}
-          style={{
-            backgroundColor: COLORS.primary,
-            color: '#000',
-            border: 'none',
-            padding: '10px 20px',
-            fontFamily: 'monospace',
-            fontWeight: 'bold',
-            cursor: 'pointer'
-          }}
-        >
-          [Launch Token]
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button 
+            onClick={fetchTokens}
+            style={{
+              backgroundColor: 'transparent',
+              color: COLORS.textSecondary,
+              border: `1px solid ${COLORS.border}`,
+              padding: '10px',
+              fontFamily: 'monospace',
+              cursor: 'pointer'
+            }}
+          >
+            [Refresh]
+          </button>
+          <button 
+            onClick={() => setCurrentPage('launch')}
+            style={{
+              backgroundColor: COLORS.primary,
+              color: '#000',
+              border: 'none',
+              padding: '10px 20px',
+              fontFamily: 'monospace',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            [Launch Token]
+          </button>
+        </div>
       </div>
       
-      {loading && <div style={{ color: COLORS.textSecondary }}>Loading tokens...</div>}
-      {error && <div style={{ color: '#ef4444' }}>Error: {error}</div>}
+      {loading && <div style={{ textAlign: 'center', padding: '40px', color: COLORS.textSecondary }}>Checking Ritual Chain...</div>}
+      {error && <div style={{ padding: '20px', backgroundColor: '#450a0a', border: '1px solid #ef4444', color: '#ef4444', marginBottom: '20px' }}>Error: {error}</div>}
+
+      {!loading && tokens.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '100px 20px', backgroundColor: COLORS.cardBackground, border: `1px solid ${COLORS.border}` }}>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>😿</div>
+          <h3 style={{ color: COLORS.textSecondary }}>No tokens found on Ritual Chain yet.</h3>
+          <p style={{ color: COLORS.textMuted }}>Be the first to launch one!</p>
+          <button 
+            onClick={() => setCurrentPage('launch')}
+            style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: COLORS.primary, border: 'none', fontFamily: 'monospace', cursor: 'pointer' }}
+          >
+            Launch Token
+          </button>
+        </div>
+      )}
 
       <div style={{ 
         display: 'grid', 
@@ -151,8 +180,10 @@ export default function App() {
           <div 
             key={token.address}
             onClick={() => {
+              console.log("Selecting token:", token.address);
               setSelectedToken(token);
               setCurrentPage('detail');
+              window.scrollTo(0, 0);
             }}
             style={{
               backgroundColor: COLORS.cardBackground,
@@ -248,6 +279,7 @@ export default function App() {
           >
             {launching ? 'Launching...' : account ? 'Create Token' : 'Connect Wallet to Launch'}
           </button>
+          {!account && <p style={{ fontSize: '11px', color: '#ef4444', textAlign: 'center', margin: 0 }}>* Please connect your wallet from the top right to launch.</p>}
         </form>
       </div>
     );
@@ -274,7 +306,19 @@ export default function App() {
           onClick={() => setCurrentPage('home')}
           style={{ display: 'flex', alignItems: 'center', gap: '15px', cursor: 'pointer' }}
         >
-          <img src="/logo.png" alt="rit.fun" style={{ height: '40px', borderRadius: '4px' }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+          <div style={{ width: '40px', height: '40px', borderRadius: '4px', backgroundColor: COLORS.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <img 
+              src="/logo.png" 
+              alt="rit.fun" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.parentElement) {
+                  e.currentTarget.parentElement.innerHTML = '<span style="font-size: 24px">🐱</span>';
+                }
+              }} 
+            />
+          </div>
           <div style={{ fontSize: '24px', fontWeight: 'bold', color: COLORS.primary }}>
             rit.fun
           </div>

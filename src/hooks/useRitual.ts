@@ -50,32 +50,59 @@ export function useRitual() {
   const fetchTokens = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       // Use public RPC if no provider connected
       const rpcProvider = provider || new ethers.JsonRpcProvider(RITUAL_CHAIN_CONFIG.rpcUrls[0]);
       const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, rpcProvider);
       
-      const tokensData = await factory.getAllTokens();
+      const tokensData = await factory.getAllTokens().catch((e: any) => {
+        console.error("Factory getAllTokens failed:", e);
+        return [];
+      });
+
+      if (!tokensData || tokensData.length === 0) {
+        setTokens([]);
+        return;
+      }
+
       const mappedTokens: Token[] = await Promise.all(tokensData.map(async (t: any) => {
-        const tokenContract = new ethers.Contract(t.tokenAddress, TOKEN_ABI, rpcProvider);
-        const totalSupply = await tokenContract.totalSupply();
-        const price = await tokenContract.getBuyPrice(ethers.parseEther("1"));
-        
-        return {
-          address: t.tokenAddress,
-          name: t.name,
-          symbol: t.symbol,
-          description: t.description,
-          creator: t.creator,
-          createdAt: Number(t.createdAt),
-          totalSupply: ethers.formatEther(totalSupply),
-          price: ethers.formatEther(price),
-          marketCap: ethers.formatEther(price * (totalSupply / 10n**18n)) // Simplified Mcap
-        };
+        try {
+          const tokenContract = new ethers.Contract(t.tokenAddress, TOKEN_ABI, rpcProvider);
+          const [totalSupply, price] = await Promise.all([
+            tokenContract.totalSupply(),
+            tokenContract.getBuyPrice(ethers.parseEther("1"))
+          ]);
+          
+          return {
+            address: t.tokenAddress,
+            name: t.name,
+            symbol: t.symbol,
+            description: t.description,
+            creator: t.creator,
+            createdAt: Number(t.createdAt),
+            totalSupply: ethers.formatEther(totalSupply),
+            price: ethers.formatEther(price),
+            marketCap: ethers.formatEther(price * (totalSupply / 10n**18n)) // Simplified Mcap
+          };
+        } catch (tokenErr) {
+          console.error(`Error fetching data for token ${t.tokenAddress}:`, tokenErr);
+          return {
+            address: t.tokenAddress,
+            name: t.name,
+            symbol: t.symbol,
+            description: t.description,
+            creator: t.creator,
+            createdAt: Number(t.createdAt),
+            totalSupply: '0',
+            price: '0',
+            marketCap: '0'
+          };
+        }
       }));
       
       setTokens(mappedTokens.reverse()); // Newest first
     } catch (err: any) {
-      console.error(err);
+      console.error("fetchTokens main error:", err);
       setError(err.message);
     } finally {
       setLoading(false);

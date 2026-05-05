@@ -10,7 +10,7 @@ import { Token, Trade } from './types';
 import { PriceChart } from './components/PriceChart';
 
 export default function App() {
-  const { account, tokens, loading, error, connectWallet, launchToken, trade, fetchTrades } = useRitual();
+  const { account, tokens, loading, error, connectWallet, fetchTokens, launchToken, trade, fetchTrades } = useRitual();
   const [currentPage, setCurrentPage] = useState<'home' | 'launch' | 'detail' | 'portfolio'>('home');
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [trades, setTrades] = useState<Trade[]>([]);
